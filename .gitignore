@@ -1,8 +1,6 @@
-@"
 node_modules/
 .env
 dist/
 build/
 .vscode/
 .DS_Store
-"@ | Set-Content .gitignore
