@@ -17,6 +17,7 @@ const questionItemSchema = {
 const interviewReportSchema = {
     type: Type.OBJECT,
     properties: {
+        title: { type: Type.STRING },
         matchScore: { type: Type.NUMBER },
         technicalQuestions: {
             type: Type.ARRAY,
@@ -56,17 +57,18 @@ const interviewReportSchema = {
             }
         }
     },
-    required: ["matchScore", "technicalQuestions", "behavioralQuestions", "skillGaps", "preparationPlan"]
+    required: ["title", "matchScore", "technicalQuestions", "behavioralQuestions", "skillGaps", "preparationPlan"]
 }
 
 async function generateInterviewReport({resume, selfDescription, jobDescription}){ 
 
     const prompt = `Generate an interview report for a candidate with the following details:
-                       Resume: ${resume}
-                       Self Description: ${selfDescription}
-                       Job Description: ${jobDescription}
+                   Resume: ${resume}
+                   Self Description: ${selfDescription}
+                   Job Description: ${jobDescription}
 
-                       Strictly return data matching the required JSON schema with fields: matchScore, technicalQuestions, behavioralQuestions, skillGaps, preparationPlan.`
+                   Strictly return data matching the required JSON schema with fields: title, matchScore, technicalQuestions, behavioralQuestions, skillGaps, preparationPlan.
+                   The title should be a short descriptive name for this interview prep report, e.g. "Frontend Engineer at Google – Interview Prep".`
 
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
