@@ -1,55 +1,37 @@
-const puppeteer = require("puppeteer")
+const PDFDocument = require("pdfkit")
 
 /**
- * @description Generates a PDF buffer from an interview report using Puppeteer.
+ * @description Generates a PDF buffer from an interview report using pdfkit.
  */
-async function generateResumePdf(interviewReport) {
+function generateResumePdf(interviewReport) {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ margin: 50 })
+            const buffers = []
 
-    const html = `
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a; }
-                h1 { color: #e91e63; border-bottom: 2px solid #e91e63; padding-bottom: 10px; }
-                h2 { margin-top: 25px; color: #333; }
-                .section { margin-bottom: 20px; }
-                .job-desc, .self-desc { white-space: pre-wrap; line-height: 1.6; }
-            </style>
-        </head>
-        <body>
-            <h1>${interviewReport.title || "Interview Preparation Report"}</h1>
+            doc.on("data", (chunk) => buffers.push(chunk))
+            doc.on("end", () => resolve(Buffer.concat(buffers)))
+            doc.on("error", reject)
 
-            <div class="section">
-                <h2>Job Description</h2>
-                <p class="job-desc">${interviewReport.jobDescription || "N/A"}</p>
-            </div>
+            doc.fontSize(22).fillColor("#e91e63").text(interviewReport.title || "Interview Preparation Report", { underline: true })
+            doc.moveDown()
 
-            <div class="section">
-                <h2>Match Score</h2>
-                <p>${interviewReport.matchScore}%</p>
-            </div>
+            doc.fontSize(14).fillColor("#000").text("Job Description", { underline: true })
+            doc.fontSize(11).fillColor("#333").text(interviewReport.jobDescription || "N/A")
+            doc.moveDown()
 
-            <div class="section">
-                <h2>Resume / Self Description</h2>
-                <p class="self-desc">${interviewReport.resume || interviewReport.selfDescription || "N/A"}</p>
-            </div>
-        </body>
-        </html>
-    `
+            doc.fontSize(14).fillColor("#000").text("Match Score", { underline: true })
+            doc.fontSize(11).fillColor("#333").text(`${interviewReport.matchScore}%`)
+            doc.moveDown()
 
-    const browser = await puppeteer.launch({
-        headless: "new",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+            doc.fontSize(14).fillColor("#000").text("Resume / Self Description", { underline: true })
+            doc.fontSize(11).fillColor("#333").text(interviewReport.resume || interviewReport.selfDescription || "N/A")
+
+            doc.end()
+        } catch (err) {
+            reject(err)
+        }
     })
-
-    const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: "networkidle0" })
-
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true })
-
-    await browser.close()
-
-    return pdfBuffer
 }
 
 module.exports = generateResumePdf
