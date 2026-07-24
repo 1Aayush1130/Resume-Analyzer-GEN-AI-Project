@@ -3,7 +3,10 @@ const tokenBlacklistModel = require("../model/blacklist.model")
 
 async function authUser(req , res , next) {
 
-    const token = req.cookies.token
+    const authHeader = req.headers.authorization
+    const token = authHeader && authHeader.startsWith("Bearer ") 
+        ? authHeader.split(" ")[1] 
+        : null
 
     if(!token){
         return  res.status(401).json({
@@ -17,7 +20,7 @@ async function authUser(req , res , next) {
 
     if(isTokenBlacklisted) {
         return res.status(401).json({
-            nessage: "token is invalid."
+            message: "token is invalid."
         })
     }
 
